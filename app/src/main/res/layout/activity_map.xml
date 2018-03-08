@@ -4,11 +4,12 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <fragment
-        android:id="@+id/fragment_recipe"
-        android:name="com.capstone.runapp.fragment.MapFragment"
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:layout="@layout/fragment_map"/>
+        tools:context="com.capstone.runapp.MapActivity" />
 
 </FrameLayout>
