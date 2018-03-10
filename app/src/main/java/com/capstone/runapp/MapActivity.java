@@ -2,9 +2,12 @@ package com.capstone.runapp;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -14,10 +17,13 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.capstone.runapp.model.Event;
 import com.capstone.runapp.model.Events;
 import com.capstone.runapp.service.DisposableManager;
 import com.capstone.runapp.service.EventService;
 import com.capstone.runapp.service.ServiceFactory;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -25,6 +31,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+
+import java.text.SimpleDateFormat;
+import java.util.Map;
 
 import butterknife.ButterKnife;
 import io.reactivex.Observable;
@@ -35,35 +46,24 @@ import io.reactivex.schedulers.Schedulers;
 
 import static android.content.ContentValues.TAG;
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallback,  GoogleMap.InfoWindowAdapter {
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.InfoWindowAdapter {
 
 
     private GoogleMap mMap;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-    private final LatLng mDefaultLocation = new LatLng(40.7143528, -74.0059731);
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private boolean mLocationPermissionGranted;
+    private final static int ZOOM_DEFAULT = 10;
+    private Location mLastKnownLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         ButterKnife.bind(this);
-
+        checkPermission();
         if (isOnline()) {
-            load();
-
-            if (ContextCompat.checkSelfPermission(this,android.Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-                } else {
-                    ActivityCompat.requestPermissions(this,
-                            new String[]{ android.Manifest.permission.ACCESS_FINE_LOCATION},
-                            PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-                }
-            }
-            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-            mapFragment.getMapAsync(this);
+            loadMapFragment();
         } else {
             showErrorMessage();
         }
@@ -92,8 +92,44 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }).show();
     }
 
+    private void checkPermission() {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
 
-    private void load() {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            }
+        } else {
+            mLocationPermissionGranted = true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String permissions[],
+                                           @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mLocationPermissionGranted = true;
+                }
+            }
+        }
+        updateLocationUI();
+    }
+
+    private void loadMapFragment() {
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+    }
+
+    private void loadEventsInformation() {
 
         EventService service = ServiceFactory.create(EventService.class, EventService.ENDPOINT);
         Observable<Events> observable = service.getEvents();
@@ -102,7 +138,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Events>() {
 
-                               Events postEvents;
+                               private Events postEvents;
 
                                @Override
                                public void onSubscribe(Disposable d) {
@@ -123,9 +159,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                @Override
                                public void onComplete() {
-                                   Log.d(TAG, "In onCompleted()");
-                                   Toast toast = Toast.makeText(getApplicationContext(), postEvents.items().get(0).nome(), Toast.LENGTH_LONG);
-                                   toast.show();
+                                   addMarker(postEvents);
                                }
                            }
                 );
@@ -136,7 +170,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setInfoWindowAdapter(this);
-        addMarker();
+        loadEventsInformation();
+        updateLocationUI();
     }
 
     @Override
@@ -147,25 +182,69 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public View getInfoContents(Marker marker) {
         return prepareInfoView(marker);
-
     }
 
     private View prepareInfoView(Marker marker) {
 
         View display = getLayoutInflater().inflate(R.layout.custom_info_contents, null);
-        TextView text = (TextView) display.findViewById(R.id.title);
-        text.setText("teste");
+        TextView title = display.findViewById(R.id.title);
+        title.setText(marker.getTitle());
+
+        TextView snippet = display.findViewById(R.id.snippet);
+        snippet.setText(marker.getSnippet());
+
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            public void onInfoWindowClick(Marker marker) {
+               Event event = (Event) marker.getTag();
+                Toast.makeText(getApplicationContext(), event.nome(), Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
         return display;
     }
 
-    private void addMarker(){
-        MarkerOptions markerOptions =
-                new MarkerOptions().position(mDefaultLocation).title("test location");
+    private void addMarker(Events events) {
 
-        mMap.addMarker(markerOptions);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(mDefaultLocation));
+        for (Event event : events.items()) {
+            LatLng location = new LatLng(event.latitude(), event.longitude());
+
+            MarkerOptions markerOptions =
+                    new MarkerOptions().position(location).title(event.nome()).snippet("Quando: " + dateFormat.format(event.data()));
+            Marker m = mMap.addMarker(markerOptions);
+            m.setTag(event);
+           // mapEvents.put(event.nome(),event);
+        }
 
     }
 
-
+    private void updateLocationUI() {
+        if (mMap == null) {
+            return;
+        }
+        try {
+            if (mLocationPermissionGranted) {
+                mMap.setMyLocationEnabled(true);
+                FusedLocationProviderClient mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+                Task locationResult = mFusedLocationProviderClient.getLastLocation();
+                locationResult.addOnCompleteListener(this, new OnCompleteListener() {
+                    @Override
+                    public void onComplete(@NonNull Task task) {
+                        if (task.isSuccessful()) {
+                            // Set the map's camera position to the current location of the device.
+                            mLastKnownLocation = (Location) task.getResult();
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                    new LatLng(mLastKnownLocation.getLatitude(),
+                                            mLastKnownLocation.getLongitude()), ZOOM_DEFAULT));
+                        }
+                    }
+                });
+            } else {
+                mMap.setMyLocationEnabled(false);
+                mMap.getUiSettings().setMyLocationButtonEnabled(false);
+            }
+        } catch (SecurityException e) {
+            Log.e("Exception: %s", e.getMessage());
+        }
+    }
 }
