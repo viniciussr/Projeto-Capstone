@@ -1,6 +1,7 @@
 package com.capstone.runapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -22,12 +23,14 @@ import com.capstone.runapp.model.Events;
 import com.capstone.runapp.service.DisposableManager;
 import com.capstone.runapp.service.EventService;
 import com.capstone.runapp.service.ServiceFactory;
+import com.capstone.runapp.util.Format;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -37,6 +40,8 @@ import com.google.android.gms.tasks.Task;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
+import butterknife.BindString;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -51,10 +56,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     private boolean mLocationPermissionGranted;
     private final static int ZOOM_DEFAULT = 10;
     private Location mLastKnownLocation;
+
+
+    @BindString(R.string.intent_event_detail)
+    String pIntentEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -187,16 +195,23 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private View prepareInfoView(Marker marker) {
 
         View display = getLayoutInflater().inflate(R.layout.custom_info_contents, null);
+
         TextView title = display.findViewById(R.id.title);
         title.setText(marker.getTitle());
-
         TextView snippet = display.findViewById(R.id.snippet);
         snippet.setText(marker.getSnippet());
 
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             public void onInfoWindowClick(Marker marker) {
-               Event event = (Event) marker.getTag();
-                Toast.makeText(getApplicationContext(), event.nome(), Toast.LENGTH_SHORT).show();
+
+//                Class detailActivity = DetailActivity.class;
+//                Intent intentDetailActivity = new Intent(context, detailActivity);
+//                intentDetailActivity.putExtra(getResources().getString(R.string.intent_detail_put_extra), movie);
+//                startActivity(intentDetailActivity);
+
+                startActivity((new Intent(getApplicationContext(), EventDetailActivity.class)).putExtra(pIntentEvent,(Event)marker.getTag()));
+
+
 
             }
         });
@@ -210,9 +225,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             LatLng location = new LatLng(event.latitude(), event.longitude());
 
             MarkerOptions markerOptions =
-                    new MarkerOptions().position(location).title(event.nome()).snippet("Quando: " + dateFormat.format(event.data()));
-            Marker m = mMap.addMarker(markerOptions);
-            m.setTag(event);
+                    new MarkerOptions().position(location).title(event.nome()).snippet("Quando: " + Format.dateFormat(event.data()));
+            Marker marker = mMap.addMarker(markerOptions);
+            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.run_icon));
+            marker.setTag(event);
            // mapEvents.put(event.nome(),event);
         }
 

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Run app</string>
+
+    <string name="intent_event_detail">event</string>
 </resources>
