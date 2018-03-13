@@ -9,9 +9,13 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ShareCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.capstone.runapp.model.Event;
 import com.capstone.runapp.provider.EventContract;
@@ -55,12 +59,11 @@ public class EventDetailActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         event = getIntent().getParcelableExtra(pIntentDetail);
-        title.setText(event.nome());
         date.setText(Format.dateFormat(event.data()));
         value.setText(new StringBuilder().append("R$").append(Format.numberFormat(event.valor())));
         description.setText(event.descricao());
 
-       fab.setOnClickListener(new View.OnClickListener() {
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View button) {
                 button.setSelected(!button.isSelected());
@@ -73,6 +76,37 @@ public class EventDetailActivity extends AppCompatActivity {
         });
         toggleFavorite();
 
+        Toolbar toolbar = findViewById(R.id.detail_toolbar);
+        toolbar.setTitle(event.nome());
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new         Intent(getApplicationContext(),MapActivity.class));
+            }
+        });
+
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_event_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if(id == R.id.share){
+            Toast.makeText(this, "Action clicked", Toast.LENGTH_LONG).show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void addFavorites() {
@@ -97,11 +131,11 @@ public class EventDetailActivity extends AppCompatActivity {
         Uri uri = EventContract.EventEntry.CONTENT_URI;
         ContentResolver resolver = getContentResolver();
 
-        resolver.delete(uri,EventContract.EventEntry.NAME + " = ?",new String[]{event.nome()});
+        resolver.delete(uri, EventContract.EventEntry.NAME + " = ?", new String[]{event.nome()});
 
     }
 
-    private boolean checkFavorites(){
+    private boolean checkFavorites() {
 
         Uri uri = EventContract.EventEntry.CONTENT_URI;
         ContentResolver resolver = getContentResolver();
@@ -111,13 +145,13 @@ public class EventDetailActivity extends AppCompatActivity {
             if (cursor != null && cursor.moveToFirst())
                 return true;
         } finally {
-            if(cursor != null)
+            if (cursor != null)
                 cursor.close();
         }
         return false;
     }
 
-    private void toggleFavorite(){
+    private void toggleFavorite() {
 
         boolean inFavorites = checkFavorites();
         fab.setSelected(inFavorites);
