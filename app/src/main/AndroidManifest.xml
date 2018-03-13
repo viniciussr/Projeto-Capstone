@@ -28,6 +28,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".EventDetailActivity"></activity>
+        <provider
+            android:authorities="com.capstone.runapp"
+            android:name=".provider.EventProvider" >
+        </provider>
     </application>
 
 </manifest>

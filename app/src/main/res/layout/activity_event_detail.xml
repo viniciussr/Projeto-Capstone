@@ -161,7 +161,7 @@
         android:background="#FF4081"
         android:contentDescription="Favorite"
         android:elevation="2dp"
-        android:src="@drawable/ic_star"
+        android:src="@drawable/star"
         app:layout_anchorGravity="bottom|right|end"/>
 
 </android.support.design.widget.CoordinatorLayout>
