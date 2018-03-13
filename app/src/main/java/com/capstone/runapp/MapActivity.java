@@ -15,8 +15,9 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+
 
 import com.capstone.runapp.model.Event;
 import com.capstone.runapp.model.Events;
@@ -37,9 +38,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-import java.text.SimpleDateFormat;
-import java.util.Map;
-
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -48,6 +46,7 @@ import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import retrofit2.HttpException;
 
 import static android.content.ContentValues.TAG;
 
@@ -59,10 +58,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private boolean mLocationPermissionGranted;
     private final static int ZOOM_DEFAULT = 10;
     private Location mLastKnownLocation;
-
+    private Events postEvents;
 
     @BindString(R.string.intent_event_detail)
     String pIntentEvent;
+
+    @BindView(R.id.loading_spinner)
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,9 +73,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         ButterKnife.bind(this);
         checkPermission();
         if (isOnline()) {
-            loadMapFragment();
+            loadEventsInformation();
         } else {
-            showErrorMessage();
+            showErrorMessage("No internet conection");
         }
     }
 
@@ -91,8 +93,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
-    private void showErrorMessage() {
-        Snackbar.make(findViewById(android.R.id.content), "No internet conection", Snackbar.LENGTH_INDEFINITE).setAction("RETRY", new View.OnClickListener() {
+    private void showErrorMessage(String message) {
+        Snackbar.make(findViewById(android.R.id.content),message , Snackbar.LENGTH_INDEFINITE).setAction("RETRY", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 recreate();
@@ -139,38 +141,42 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void loadEventsInformation() {
 
-        EventService service = ServiceFactory.create(EventService.class, EventService.ENDPOINT);
-        Observable<Events> observable = service.getEvents();
+        try{
+            EventService service = ServiceFactory.create(EventService.class, EventService.ENDPOINT);
+            Observable<Events> observable = service.getEvents();
 
-        observable.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Events>() {
+            observable.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Observer<Events>() {
 
-                               private Events postEvents;
+                                   @Override
+                                   public void onSubscribe(Disposable d) {
+                                       DisposableManager.add(d);
+                                   }
 
-                               @Override
-                               public void onSubscribe(Disposable d) {
-                                   DisposableManager.add(d);
+                                   @Override
+                                   public void onNext(Events events) {
+                                       Log.d(TAG, "In onNext()");
+                                       postEvents = events;
+                                   }
+
+                                   @Override
+                                   public void onError(Throwable e) {
+                                       e.printStackTrace();
+                                       showErrorMessage("Failed to load information");
+                                   }
+
+                                   @Override
+                                   public void onComplete() {
+                                       progressBar.setVisibility(View.INVISIBLE);
+                                       loadMapFragment();
+                                   }
                                }
+                    );
+        }catch(HttpException e){
+            showErrorMessage("Failed to load information");
+        }
 
-                               @Override
-                               public void onNext(Events events) {
-                                   Log.d(TAG, "In onNext()");
-                                   postEvents = events;
-                               }
-
-                               @Override
-                               public void onError(Throwable e) {
-                                   e.printStackTrace();
-                                   Log.d(TAG, "In onError()");
-                               }
-
-                               @Override
-                               public void onComplete() {
-                                   addMarker(postEvents);
-                               }
-                           }
-                );
     }
 
 
@@ -178,8 +184,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setInfoWindowAdapter(this);
-        loadEventsInformation();
         updateLocationUI();
+        addMarker(postEvents);
     }
 
     @Override
