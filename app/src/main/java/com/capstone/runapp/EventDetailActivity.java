@@ -13,18 +13,12 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.capstone.runapp.model.Event;
 import com.capstone.runapp.provider.EventContract;
 import com.capstone.runapp.util.Format;
 
-import java.text.Normalizer;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
 
 import butterknife.BindString;
 import butterknife.BindView;
@@ -58,39 +52,10 @@ public class EventDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_event_detail);
         ButterKnife.bind(this);
 
-        event = getIntent().getParcelableExtra(pIntentDetail);
-        date.setText(Format.dateFormat(event.data()));
-        value.setText(new StringBuilder().append("R$").append(Format.numberFormat(event.valor())));
-        description.setText(event.descricao());
-
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View button) {
-                button.setSelected(!button.isSelected());
-                if (button.isSelected()) {
-                    addFavorites();
-                } else {
-                    deleteFavorites();
-                }
-            }
-        });
+        loadEvents();
+        eventFab();
         toggleFavorite();
-
-        Toolbar toolbar = findViewById(R.id.detail_toolbar);
-        toolbar.setTitle(event.nome());
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-
-
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new         Intent(getApplicationContext(),MapActivity.class));
-            }
-        });
-
-
+        loadToolbar();
     }
 
     @Override
@@ -102,11 +67,51 @@ public class EventDetailActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if(id == R.id.share){
-            Toast.makeText(this, "Action clicked", Toast.LENGTH_LONG).show();
-            return true;
+        StringBuilder textShare = new StringBuilder().append(event.nome()).append(" - ").append("R$").append(Format.numberFormat(event.valor()));
+        if (id == R.id.share) {
+            startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(this)
+                    .setType("text/plain")
+                    .setText(textShare)
+                    .getIntent(), getString(R.string.action_share)));
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void loadToolbar() {
+        Toolbar toolbar = findViewById(R.id.detail_toolbar);
+        toolbar.setTitle(event.nome());
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+    }
+
+    private void eventFab() {
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View button) {
+                button.setSelected(!button.isSelected());
+                if (button.isSelected()) {
+                    addFavorites();
+                } else {
+                    deleteFavorites();
+                }
+            }
+        });
+    }
+
+    private void loadEvents() {
+        event = getIntent().getParcelableExtra(pIntentDetail);
+        date.setText(Format.dateFormat(event.data()));
+        value.setText(new StringBuilder().append("R$").append(Format.numberFormat(event.valor())));
+        description.setText(event.descricao());
     }
 
     private void addFavorites() {
@@ -117,7 +122,7 @@ public class EventDetailActivity extends AppCompatActivity {
         values.clear();
 
         values.put(EventContract.EventEntry.NAME, event.nome());
-        values.put(EventContract.EventEntry.DATE, event.data().toString());
+        values.put(EventContract.EventEntry.DATE, Format.dateFormat(event.data()));
         values.put(EventContract.EventEntry.VALUE, event.valor());
         values.put(EventContract.EventEntry.DESCRIPTION, event.descricao());
         values.put(EventContract.EventEntry.LATITUDE, event.latitude());

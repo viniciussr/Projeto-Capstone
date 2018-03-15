@@ -2,4 +2,9 @@
     <string name="app_name">Run app</string>
 
     <string name="intent_event_detail">event</string>
+    <string name="action_share">Share</string>
+    <string name="action_favorite">Favorites</string>
+    <string name="action_all">All</string>
+
+
 </resources>

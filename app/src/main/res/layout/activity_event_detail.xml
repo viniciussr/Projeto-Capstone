@@ -45,7 +45,8 @@
                 android:paddingLeft="16dp"
                 android:paddingRight="16dp"
                 android:paddingTop="16dp"
-                android:background="@color/cardview_dark_background">
+                android:theme="@style/ToolBarStyle"
+                >
 
                 <TextView
                     android:id="@+id/titulo"

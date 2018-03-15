@@ -2,6 +2,7 @@ package com.capstone.runapp.util;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -12,7 +13,7 @@ import java.util.Locale;
 
 public class Format {
 
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
     private static DecimalFormat decimalFormat = new java.text.DecimalFormat("###,####.##");
 
 
@@ -23,6 +24,10 @@ public class Format {
 
     public static String dateFormat(Date date){
        return dateFormat.format(date);
+    }
+
+    public static Date dateFormat(String date) throws ParseException {
+        return dateFormat.parse(date);
     }
 
 }

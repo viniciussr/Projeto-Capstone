@@ -13,7 +13,10 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -23,6 +26,7 @@ import com.capstone.runapp.model.Event;
 import com.capstone.runapp.model.Events;
 import com.capstone.runapp.service.DisposableManager;
 import com.capstone.runapp.service.EventService;
+import com.capstone.runapp.service.FavoriteService;
 import com.capstone.runapp.service.ServiceFactory;
 import com.capstone.runapp.util.Format;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -37,6 +41,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+
+import java.util.ArrayList;
 
 import butterknife.BindString;
 import butterknife.BindView;
@@ -72,6 +78,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_map);
         ButterKnife.bind(this);
         checkPermission();
+        loadToolbar();
         if (isOnline()) {
             loadEventsInformation();
         } else {
@@ -94,7 +101,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void showErrorMessage(String message) {
-        Snackbar.make(findViewById(android.R.id.content),message , Snackbar.LENGTH_INDEFINITE).setAction("RETRY", new View.OnClickListener() {
+        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_INDEFINITE).setAction("RETRY", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 recreate();
@@ -141,7 +148,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void loadEventsInformation() {
 
-        try{
+        try {
             EventService service = ServiceFactory.create(EventService.class, EventService.ENDPOINT);
             Observable<Events> observable = service.getEvents();
 
@@ -173,7 +180,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                    }
                                }
                     );
-        }catch(HttpException e){
+        } catch (HttpException e) {
             showErrorMessage("Failed to load information");
         }
 
@@ -185,7 +192,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mMap = googleMap;
         mMap.setInfoWindowAdapter(this);
         updateLocationUI();
-        addMarker(postEvents);
+        loadMarker(postEvents);
     }
 
     @Override
@@ -196,6 +203,24 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public View getInfoContents(Marker marker) {
         return prepareInfoView(marker);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_map_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (item.getItemId()){
+            case R.id.all:
+                loadEventsInformation();
+            case R.id.favorites:
+                loadFavorites();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private View prepareInfoView(Marker marker) {
@@ -209,35 +234,39 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             public void onInfoWindowClick(Marker marker) {
-
-//                Class detailActivity = DetailActivity.class;
-//                Intent intentDetailActivity = new Intent(context, detailActivity);
-//                intentDetailActivity.putExtra(getResources().getString(R.string.intent_detail_put_extra), movie);
-//                startActivity(intentDetailActivity);
-
-                startActivity((new Intent(getApplicationContext(), EventDetailActivity.class)).putExtra(pIntentEvent,(Event)marker.getTag()));
-
-
-
+                startActivity((new Intent(getApplicationContext(), EventDetailActivity.class)).putExtra(pIntentEvent, (Event) marker.getTag()));
             }
         });
 
         return display;
     }
 
-    private void addMarker(Events events) {
+    private void loadMarker(Events events) {
 
+        mMap.clear();
         for (Event event : events.items()) {
-            LatLng location = new LatLng(event.latitude(), event.longitude());
-
-            MarkerOptions markerOptions =
-                    new MarkerOptions().position(location).title(event.nome()).snippet("Quando: " + Format.dateFormat(event.data()));
-            Marker marker = mMap.addMarker(markerOptions);
-            marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.run_icon));
-            marker.setTag(event);
-           // mapEvents.put(event.nome(),event);
+            addMarker(event);
         }
 
+    }
+
+    private void loadMarker(ArrayList<Event> events) {
+
+        mMap.clear();
+        for (Event event : events) {
+            addMarker(event);
+        }
+
+    }
+
+    private void addMarker(Event event) {
+        LatLng location = new LatLng(event.latitude(), event.longitude());
+
+        MarkerOptions markerOptions =
+                new MarkerOptions().position(location).title(event.nome()).snippet("Quando: " + Format.dateFormat(event.data()));
+        Marker marker = mMap.addMarker(markerOptions);
+        marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.run_icon));
+        marker.setTag(event);
     }
 
     private void updateLocationUI() {
@@ -269,4 +298,21 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             Log.e("Exception: %s", e.getMessage());
         }
     }
+
+    private void loadToolbar() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+    }
+
+    private void loadFavorites() {
+
+        FavoriteService service = new FavoriteService();
+        Disposable subscription = Observable.fromArray(service.loadFromDB(this))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(events -> {
+                    loadMarker(events);
+                });
+    }
+
+
 }
