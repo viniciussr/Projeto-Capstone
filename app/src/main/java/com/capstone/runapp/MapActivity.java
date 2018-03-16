@@ -82,7 +82,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         if (isOnline()) {
             loadEventsInformation();
         } else {
-            showErrorMessage("No internet conection");
+            showErrorMessage(getString(R.string.message_without_internet));
         }
     }
 
@@ -101,7 +101,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void showErrorMessage(String message) {
-        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_INDEFINITE).setAction("RETRY", new View.OnClickListener() {
+        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_INDEFINITE).setAction(getString(R.string.message_retry), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 recreate();
@@ -163,14 +163,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                    @Override
                                    public void onNext(Events events) {
-                                       Log.d(TAG, "In onNext()");
                                        postEvents = events;
                                    }
 
                                    @Override
                                    public void onError(Throwable e) {
                                        e.printStackTrace();
-                                       showErrorMessage("Failed to load information");
+                                       showErrorMessage(getString(R.string.message_fail_load_info));
                                    }
 
                                    @Override
@@ -181,7 +180,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                }
                     );
         } catch (HttpException e) {
-            showErrorMessage("Failed to load information");
+            showErrorMessage(getString(R.string.message_fail_load_info));
         }
 
     }
@@ -263,7 +262,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         LatLng location = new LatLng(event.latitude(), event.longitude());
 
         MarkerOptions markerOptions =
-                new MarkerOptions().position(location).title(event.nome()).snippet("Quando: " + Format.dateFormat(event.data()));
+                new MarkerOptions().position(location).title(event.nome()).snippet(getString(R.string.message_snippet)+ Format.dateFormat(event.data()));
         Marker marker = mMap.addMarker(markerOptions);
         marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.run_icon));
         marker.setTag(event);
@@ -295,7 +294,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
             }
         } catch (SecurityException e) {
-            Log.e("Exception: %s", e.getMessage());
+            Log.e("%s", e.getMessage());
         }
     }
 

@@ -10,6 +10,20 @@
     <string name="add_widget">Add widget</string>
     <string name="widget_ok_button">OK</string>
 
+    <string name="message_without_internet">No internet conection</string>
+    <string name="message_retry">RETRY</string>
+    <string name="message_fail_load_info">Failed to load information</string>
+    <string name="message_snippet">Quando: </string>
+
+    <string name="type">text/plain</string>
+
+    <string name="money">R$</string>
+
+
+
+
+
+
 
 
 </resources>

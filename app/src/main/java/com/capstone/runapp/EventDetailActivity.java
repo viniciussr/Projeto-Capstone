@@ -70,7 +70,7 @@ public class EventDetailActivity extends AppCompatActivity {
         StringBuilder textShare = new StringBuilder().append(event.nome()).append(" - ").append("R$").append(Format.numberFormat(event.valor()));
         if (id == R.id.share) {
             startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(this)
-                    .setType("text/plain")
+                    .setType(getString(R.string.type))
                     .setText(textShare)
                     .getIntent(), getString(R.string.action_share)));
         }
@@ -110,7 +110,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private void loadEvents() {
         event = getIntent().getParcelableExtra(pIntentDetail);
         date.setText(Format.dateFormat(event.data()));
-        value.setText(new StringBuilder().append("R$").append(Format.numberFormat(event.valor())));
+        value.setText(new StringBuilder().append(getString(R.string.money)).append(Format.numberFormat(event.valor())));
         description.setText(event.descricao());
     }
 
