@@ -15,10 +15,9 @@ import java.util.TimeZone;
 public class Format {
 
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-    private static DecimalFormat decimalFormat = new java.text.DecimalFormat("###,####.##");
-
 
     public static String numberFormat(Float value ){
+        DecimalFormat decimalFormat = new java.text.DecimalFormat();
         decimalFormat.setMinimumFractionDigits(2);
         return decimalFormat.format(value);
     }
