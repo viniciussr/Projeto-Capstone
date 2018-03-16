@@ -6,5 +6,10 @@
     <string name="action_favorite">Favorites</string>
     <string name="action_all">All</string>
 
+    <string name="appwidget_text">Event Widget</string>
+    <string name="add_widget">Add widget</string>
+    <string name="widget_ok_button">OK</string>
+
+
 
 </resources>
