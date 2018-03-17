@@ -1,5 +1,4 @@
-<android.support.design.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/draw_insets_frame_layout"
     android:layout_width="match_parent"
@@ -9,15 +8,14 @@
     <android.support.design.widget.AppBarLayout
         android:id="@+id/detail_app_bar"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        >
+        android:layout_height="@dimen/detail_title"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
         <android.support.design.widget.CollapsingToolbarLayout
             android:id="@+id/detail_collapsing_toolbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:expandedTitleMarginBottom="40dp"
+            app:expandedTitleMarginBottom="@dimen/expanded_title_margin_bottom"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <ImageView
@@ -25,15 +23,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
+                android:src="@drawable/image_run"
                 app:layout_collapseMode="parallax"
-                app:layout_collapseParallaxMultiplier="1"
-                android:src="@drawable/image_run"/>
+                app:layout_collapseParallaxMultiplier="1" />
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/photo_background_protection"
-                />
+                android:background="@drawable/photo_background_protection" />
 
             <LinearLayout
                 android:id="@+id/meta_bar"
@@ -41,28 +38,27 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:orientation="vertical"
-                android:paddingBottom="16dp"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp"
-                android:paddingTop="16dp"
-                android:theme="@style/ToolBarStyle"
-                >
+                android:paddingBottom="@dimen/padding_bottom"
+                android:paddingLeft="@dimen/padding_left"
+                android:paddingRight="@dimen/padding_right"
+                android:paddingTop="@dimen/padding_top"
+                android:theme="@style/ToolBarStyle">
 
                 <TextView
                     android:id="@+id/titulo"
                     style="?android:attr/textAppearanceLarge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginTop="30dp"
-                    android:textColor="#ffff" />
+                    android:layout_marginLeft="@dimen/layout_margin_left"
+                    android:layout_marginTop="@dimen/layout_margin_top"
+                    android:textColor="@color/white" />
             </LinearLayout>
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/detail_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                app:elevation="2dp"
+                app:elevation="@dimen/toolbar_elevation"
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
@@ -73,10 +69,10 @@
         android:id="@+id/scrollview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="10dp"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:paddingTop="10dp"
+        android:paddingBottom="@dimen/padding_bottom_scroll_view"
+        android:paddingLeft="@dimen/padding_left"
+        android:paddingRight="@dimen/padding_right"
+        android:paddingTop="@dimen/padding_top_scroll_view"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
@@ -87,79 +83,48 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Data:" />
+                android:text="@string/date" />
 
             <TextView
                 android:id="@+id/date"
-                style="?android:attr/textAppearanceMedium"
+                style="@style/text_detail"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginTop="5dp"
-                android:lineSpacingMultiplier="1.25"
-                android:paddingBottom="16dp"
-                android:textAlignment="center"
-                android:textColorLink="#FF4081"
-                android:textSize="20sp" />
+                android:layout_height="wrap_content" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Valor:" />
+                android:text="@string/value" />
 
             <TextView
                 android:id="@+id/value"
-                style="?android:attr/textAppearanceMedium"
+                style="@style/text_detail"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginTop="5dp"
-                android:lineSpacingMultiplier="1.25"
-                android:paddingBottom="16dp"
-                android:textAlignment="center"
-                android:textColorLink="#FF4081"
-                android:textSize="20sp" />
+                android:layout_height="wrap_content" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Descricao:" />
+                android:text="@string/description" />
 
             <TextView
                 android:id="@+id/description"
-                style="?android:attr/textAppearanceMedium"
+                style="@style/text_detail"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginTop="5dp"
-                android:lineSpacingMultiplier="1.25"
-                android:paddingBottom="16dp"
-                android:textAlignment="center"
-                android:textColorLink="#FF4081"
-                android:textSize="20sp" />
+                android:layout_height="wrap_content" />
 
         </LinearLayout>
-
 
     </android.support.v4.widget.NestedScrollView>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/favorite"
+        style="@style/fab_detail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="24dp"
-        android:layout_marginRight="24dp"
-        android:background="#FF4081"
-        android:contentDescription="Favorite"
-        android:elevation="2dp"
-        android:src="@drawable/star"
-        app:layout_anchorGravity="bottom|right|end"/>
+        android:contentDescription="@string/favorite"
+        app:elevation="@dimen/fab_elevation"
+        app:layout_anchorGravity="bottom|right|end" />
 
 </android.support.design.widget.CoordinatorLayout>

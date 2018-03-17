@@ -18,12 +18,9 @@
     <string name="type">text/plain</string>
 
     <string name="money">R$</string>
-
-
-
-
-
-
-
+    <string name="date">Data:</string>
+    <string name="value">Valor:</string>
+    <string name="description">Descricao:</string>
+    <string name="favorite">Favorite</string>
 
 </resources>

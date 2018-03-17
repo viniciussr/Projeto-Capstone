@@ -1,0 +1,45 @@
+<resources>
+
+    <dimen name="default_padding">4dp</dimen>
+    <dimen name="toolbar_elevation">2dp</dimen>
+
+    <!-- event detail -->
+    <dimen name="detail_title">300dp</dimen>
+    <dimen name="expanded_title_margin_bottom">40dp</dimen>
+
+    <dimen name="padding_bottom">16dp</dimen>
+    <dimen name="padding_left">16dp</dimen>
+    <dimen name="padding_right">16dp</dimen>
+    <dimen name="padding_top">16dp</dimen>
+
+    <dimen name="padding_bottom_scroll_view">10dp</dimen>
+    <dimen name="padding_top_scroll_view">10dp</dimen>
+
+    <dimen name="layout_margin_left">20dp</dimen>
+    <dimen name="layout_margin_top">30dp</dimen>
+
+    <!-- text event detail-->
+
+    <dimen name="txt_layout_margin_bottom">5dp</dimen>
+    <dimen name="txt_layout_margin_left">16dp</dimen>
+    <dimen name="txt_layout_margin_right">16dp</dimen>
+    <dimen name="txt_layout_margin_top">5dp</dimen>
+    <dimen name="txt_line_spacing_multiplier">1.25</dimen>
+    <dimen name="txt_padding_bottom">16dp</dimen>
+    <dimen name="txt_text_size">20sp</dimen>
+
+    <!-- fab event detail-->
+
+    <dimen name="fab_layout_margin_bottom">24dp</dimen>
+    <dimen name="fab_layout_margin_right">24dp</dimen>
+    <dimen name="fab_elevation">2dp</dimen>
+
+    <!-- widget -->
+    <dimen name="layout_editor_absoluteX">0dp</dimen>
+    <dimen name="layout_editor_absoluteY">50dp</dimen>
+    <dimen name="layout_marginTop">8dp</dimen>
+    <dimen name="layout_marginLeft">8dp</dimen>
+    <dimen name="layout_marginRight">8dp</dimen>
+    <dimen name="layout_width">0dp</dimen>
+
+</resources>

@@ -4,21 +4,20 @@
     android:layout_height="match_parent"
     android:background="@color/cardview_dark_background"
     android:orientation="vertical"
-    android:padding="4dp">
+    android:padding="@dimen/default_padding">
 
     <TextView
         android:id="@+id/w_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/cardview_light_background"
-        android:textStyle="bold"
+        style="@style/text_widget_info"
          />
 
     <TextView
         android:id="@+id/w_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/cardview_light_background"
+        style="@style/text_widget_info"
         />
 
 </LinearLayout>
