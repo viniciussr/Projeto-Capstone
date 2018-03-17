@@ -63,7 +63,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
     private final static int ZOOM_DEFAULT = 10;
-    private Location mLastKnownLocation;
+    private final static LatLng DEFAULT_LOCATION = new LatLng(-22.98558491, -43.17618223);
     private Events postEvents;
 
     @BindString(R.string.intent_event_detail)
@@ -212,7 +212,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
         switch (item.getItemId()){
             case R.id.all:
                 loadEventsInformation();
@@ -282,10 +281,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     public void onComplete(@NonNull Task task) {
                         if (task.isSuccessful()) {
                             // Set the map's camera position to the current location of the device.
-                            mLastKnownLocation = (Location) task.getResult();
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                    new LatLng(mLastKnownLocation.getLatitude(),
-                                            mLastKnownLocation.getLongitude()), ZOOM_DEFAULT));
+                            Location mLastKnownLocation = (Location) task.getResult();
+                            if(mLastKnownLocation != null){
+                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                        new LatLng(mLastKnownLocation.getLatitude(),
+                                                mLastKnownLocation.getLongitude()), ZOOM_DEFAULT));
+                            }else{
+                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                        DEFAULT_LOCATION, ZOOM_DEFAULT));
+                            }
                         }
                     }
                 });
@@ -304,7 +308,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void loadFavorites() {
-
         FavoriteService service = new FavoriteService();
         Disposable subscription = Observable.fromArray(service.loadFromDB(this))
                 .observeOn(AndroidSchedulers.mainThread())
@@ -312,6 +315,5 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                     loadMarker(events);
                 });
     }
-
 
 }
