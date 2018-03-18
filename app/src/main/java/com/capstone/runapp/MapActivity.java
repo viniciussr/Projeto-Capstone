@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -29,6 +30,9 @@ import com.capstone.runapp.service.EventService;
 import com.capstone.runapp.service.FavoriteService;
 import com.capstone.runapp.service.ServiceFactory;
 import com.capstone.runapp.util.Format;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -65,12 +69,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     private final static int ZOOM_DEFAULT = 10;
     private final static LatLng DEFAULT_LOCATION = new LatLng(-22.98558491, -43.17618223);
     private Events postEvents;
+    private AdView mAdView;
 
     @BindString(R.string.intent_event_detail)
     String pIntentEvent;
-
-    @BindView(R.id.loading_spinner)
-    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +83,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         loadToolbar();
         if (isOnline()) {
             loadEventsInformation();
+            loadAdmob();
         } else {
             showErrorMessage(getString(R.string.message_without_internet));
         }
@@ -89,6 +92,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     protected void onDestroy() {
         DisposableManager.dispose();
+        if (mAdView != null) {
+            mAdView.destroy();
+        }
         super.onDestroy();
     }
 
@@ -147,7 +153,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void loadEventsInformation() {
-
+        FrameLayout progressBar = (FrameLayout)findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.VISIBLE);
         try {
             EventService service = ServiceFactory.create(EventService.class, EventService.ENDPOINT);
             Observable<Events> observable = service.getEvents();
@@ -168,13 +175,13 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
                                    @Override
                                    public void onError(Throwable e) {
-                                       e.printStackTrace();
+                                       progressBar.setVisibility(View.GONE);
                                        showErrorMessage(getString(R.string.message_fail_load_info));
                                    }
 
                                    @Override
                                    public void onComplete() {
-                                       progressBar.setVisibility(View.INVISIBLE);
+                                       progressBar.setVisibility(View.GONE);
                                        loadMapFragment();
                                    }
                                }
@@ -221,6 +228,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onPause() {
+        if (mAdView != null) {
+            mAdView.pause();
+        }
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mAdView != null) {
+            mAdView.resume();
+        }
+    }
+
     private View prepareInfoView(Marker marker) {
 
         View display = getLayoutInflater().inflate(R.layout.custom_info_contents, null);
@@ -240,21 +263,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     private void loadMarker(Events events) {
-
         mMap.clear();
         for (Event event : events.items()) {
             addMarker(event);
         }
-
     }
 
     private void loadMarker(ArrayList<Event> events) {
-
         mMap.clear();
         for (Event event : events) {
             addMarker(event);
         }
-
     }
 
     private void addMarker(Event event) {
@@ -314,6 +333,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 .subscribe(events -> {
                     loadMarker(events);
                 });
+    }
+
+    private void loadAdmob(){
+        MobileAds.initialize(this,getString(R.string.admob_app_id));
+        mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .build();
+        mAdView.loadAd(adRequest);
     }
 
 }

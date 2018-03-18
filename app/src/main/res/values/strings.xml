@@ -22,5 +22,6 @@
     <string name="value">Valor:</string>
     <string name="description">Descricao:</string>
     <string name="favorite">Favorite</string>
+    <string name="admob_app_id">ca-app-pub-3940256099942544/6300978111</string>
 
 </resources>
